@@ -3,42 +3,36 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\JsonResponse;
 
 class ConfirmablePasswordController extends Controller
 {
     /**
-     * Show the confirm password view.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function show()
-    {
-        return view('auth.confirm-password');
-    }
-
-    /**
      * Confirm the user's password.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return mixed
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         if (! Auth::guard('web')->validate([
             'email' => $request->user()->email,
             'password' => $request->password,
         ])) {
-            throw ValidationException::withMessages([
-                'password' => __('auth.password'),
-            ]);
+            return response()->json([
+                'message' => __('auth.password'),
+                'success' => false,
+            ], 422); // 422 Unprocessable Entity
         }
 
         $request->session()->put('auth.password_confirmed_at', time());
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+        return response()->json([
+            'message' => 'Password confirmed successfully.',
+            'success' => true,
+        ]);
     }
 }

@@ -25,9 +25,6 @@ WORKDIR /var/www/html
 # Copy existing application directory contents
 COPY . /var/www/html
 
-# Copy existing application directory permissions
-RUN chown -R www-data:www-data /var/www/html
-
 # Ensure storage and cache directories are writable
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 

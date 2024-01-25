@@ -17,8 +17,7 @@ class Deplacement extends Model
     protected $fillable = [
         'user_id',
         'pays_id',
-        'date_depart',
-        'date_retour',
+        'pays_id2',
         'empreinte_co2',
         // Ajoutez d'autres champs si nécessaire
     ];

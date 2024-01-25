@@ -29,8 +29,9 @@ class LoginRequest extends FormRequest
     public function rules()
     {
         return [
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
+            'credentials' => ['required', 'array'], // Change le nom du champ en "credentials" et déclare-le comme un tableau (array)
+            'credentials.email' => ['required', 'string', 'email'], // Validation pour l'email dans le tableau "credentials"
+            'credentials.password' => ['required', 'string'], // Validation pour le mot de passe dans le tableau "credentials"
         ];
     }
 
@@ -45,11 +46,13 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $credentials = $this->input('credentials'); // Récupère le tableau "credentials" du champ de la demande
+
+        if (! Auth::attempt($credentials)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'credentials.email' => trans('auth.failed'),
             ]);
         }
 
@@ -69,15 +72,15 @@ class LoginRequest extends FormRequest
             return;
         }
 
-        event(new Lockout($this));
-
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'credentials.email' => [
+                'throttle' => trans('auth.throttle', [
+                    'seconds' => $seconds,
+                    'minutes' => ceil($seconds / 60),
+                ]),
+            ],
         ]);
     }
 
@@ -88,6 +91,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey()
     {
-        return Str::lower($this->input('email')).'|'.$this->ip();
+        return Str::lower($this->input('credentials.email')).'|'.$this->ip();
     }
 }

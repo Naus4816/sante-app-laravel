@@ -3,66 +3,55 @@ namespace App\Http\Controllers;
 
 use App\Models\Deplacement;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class DeplacementController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $deplacements = Deplacement::all();
-        return view('deplacements.index', compact('deplacements'));
+        return response()->json($deplacements);
     }
 
-    public function create()
-    {
-        return view('deplacements.create');
-    }
-
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
-            // Validez et définissez vos champs ici, par exemple:
+            // Validez et définissez vos champs ici
             'user_id' => 'required|exists:users,id',
             'pays_id' => 'required|exists:pays,id',
-            'date_depart' => 'required|date',
-            'date_retour' => 'required|date',
+            'pays_id2' => 'required|exists:pays,id',
             'empreinte_co2' => 'required|numeric',
         ]);
 
-        Deplacement::create($validatedData);
-        return redirect()->route('deplacements.index')->with('success', 'Déplacement créé avec succès.');
+        $deplacement = Deplacement::create($validatedData);
+        return response()->json(['message' => 'Déplacement créé avec succès.', 'deplacement' => $deplacement], 201);
     }
 
-    public function show($id)
+    public function show($id): JsonResponse
     {
         $deplacement = Deplacement::findOrFail($id);
-        return view('deplacements.show', compact('deplacement'));
+        return response()->json($deplacement);
     }
 
-    public function edit($id)
-    {
-        $deplacement = Deplacement::findOrFail($id);
-        return view('deplacements.edit', compact('deplacement'));
-    }
-
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
         $validatedData = $request->validate([
-            // Validez et définissez vos champs ici, par exemple:
+            // Validez et définissez vos champs ici
             'user_id' => 'required|exists:users,id',
             'pays_id' => 'required|exists:pays,id',
-            'date_depart' => 'required|date',
-            'date_retour' => 'required|date',
+            'pays_id2' => 'required|exists:pays_id2',
             'empreinte_co2' => 'required|numeric',
         ]);
 
-        Deplacement::whereId($id)->update($validatedData);
-        return redirect()->route('deplacements.index')->with('success', 'Déplacement mis à jour avec succès.');
+        $deplacement = Deplacement::findOrFail($id);
+        $deplacement->update($validatedData);
+        return response()->json(['message' => 'Déplacement mis à jour avec succès.', 'deplacement' => $deplacement]);
     }
 
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $deplacement = Deplacement::findOrFail($id);
         $deplacement->delete();
-        return redirect()->route('deplacements.index')->with('success', 'Déplacement supprimé avec succès.');
+        return response()->json(['message' => 'Déplacement supprimé avec succès.']);
     }
 }

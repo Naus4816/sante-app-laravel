@@ -5,21 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\JsonResponse;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $users = User::all();
-        return view('users.index', compact('users'));
+        return response()->json($users);
     }
 
-    public function create()
-    {
-        return view('users.create');
-    }
-
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
             'name' => 'required|max:255',
@@ -30,47 +26,39 @@ class UserController extends Controller
 
         $validatedData['password'] = Hash::make($validatedData['password']);
         
-        User::create($validatedData);
-        return redirect()->route('users.index')->with('success', 'Utilisateur créé avec succès.');
+        $user = User::create($validatedData);
+        return response()->json(['message' => 'Utilisateur créé avec succès.', 'user' => $user], 201);
     }
 
-    public function show($id)
+    public function show($id): JsonResponse
     {
         $user = User::findOrFail($id);
-        return view('users.show', compact('user'));
+        return response()->json($user);
     }
 
-    public function edit($id)
+    public function update(Request $request, $id): JsonResponse
     {
+        $validatedData = $request->validate([
+            'name' => 'required|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            // Ajouter une validation pour le mot de passe si nécessaire
+        ]);
+
         $user = User::findOrFail($id);
-        return view('users.edit', compact('user'));
+
+        if (!empty($request->password)) {
+            $validatedData['password'] = Hash::make($request->password);
+        }
+
+        $user->update($validatedData);
+
+        return response()->json(['message' => 'Utilisateur mis à jour avec succès.', 'user' => $user]);
     }
 
-    public function update(Request $request, $id)
-{
-    $validatedData = $request->validate([
-        'name' => 'required|max:255',
-        'email' => 'required|email|unique:users,email,' . $id,
-        // Pas de règle de validation pour le mot de passe ici
-    ]);
-
-    $user = User::findOrFail($id);
-
-    // Mettre à jour le mot de passe seulement s'il est fourni
-    if (!empty($request->password)) {
-        $validatedData['password'] = Hash::make($request->password);
-    }
-
-    $user->update($validatedData);
-
-    return redirect()->route('users.index')->with('success', 'Utilisateur mis à jour avec succès.');
-}
-
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $user = User::findOrFail($id);
         $user->delete();
-        return redirect()->route('users.index')->with('success', 'Utilisateur supprimé avec succès.');
+        return response()->json(['message' => 'Utilisateur supprimé avec succès.']);
     }
 }
-

@@ -4,21 +4,44 @@ namespace App\Http\Controllers;
 
 use App\Models\Recommandation;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use  App\Models\Pays;
+
 
 class RecommandationController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $recommandations = Recommandation::all();
-        return view('recommandations.index', compact('recommandations'));
+        return response()->json($recommandations);
     }
 
-    public function create()
+    public function store(Request $request): JsonResponse
     {
-        return view('recommandations.create');
+        $validatedData = $request->validate([
+            'contenu' => 'required',
+            'pays_id' => 'required',
+            // Autres champs si nécessaire
+        ]);
+
+        $recommandation = Recommandation::create($validatedData);
+        return response()->json(['message' => 'Recommandation créée avec succès.', 'recommandation' => $recommandation], 201);
     }
 
-    public function store(Request $request)
+    public function showByCountryId($id): JsonResponse
+    {
+        $pays = Pays::where('id', $id)->first();
+
+        if (!$pays) {
+            return response()->json(['message' => 'Pays non trouvé'], 404);
+        }
+
+        $recommandation = Recommandation::where('pays_id', $pays->id)->get();
+
+        return response()->json(['recommandations' => $recommandation]);
+    }
+
+    public function update(Request $request, $id): JsonResponse
     {
         $validatedData = $request->validate([
             'titre' => 'required|max:255',
@@ -26,39 +49,15 @@ class RecommandationController extends Controller
             // Autres champs si nécessaire
         ]);
 
-        Recommandation::create($validatedData);
-        return redirect()->route('recommandations.index')->with('success', 'Recommandation créée avec succès.');
-    }
-
-    public function show($id)
-    {
         $recommandation = Recommandation::findOrFail($id);
-        return view('recommandations.show', compact('recommandation'));
+        $recommandation->update($validatedData);
+        return response()->json(['message' => 'Recommandation mise à jour avec succès.', 'recommandation' => $recommandation]);
     }
 
-    public function edit($id)
-    {
-        $recommandation = Recommandation::findOrFail($id);
-        return view('recommandations.edit', compact('recommandation'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $validatedData = $request->validate([
-            'titre' => 'required|max:255',
-            'contenu' => 'required',
-            // Autres champs si nécessaire
-        ]);
-
-        Recommandation::whereId($id)->update($validatedData);
-        return redirect()->route('recommandations.index')->with('success', 'Recommandation mise à jour avec succès.');
-    }
-
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $recommandation = Recommandation::findOrFail($id);
         $recommandation->delete();
-        return redirect()->route('recommandations.index')->with('success', 'Recommandation supprimée avec succès.');
+        return response()->json(['message' => 'Recommandation supprimée avec succès.']);
     }
 }
-

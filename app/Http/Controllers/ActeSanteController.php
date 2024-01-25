@@ -5,22 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\ActeSante;
 use Illuminate\Http\Request;
 use App\Models\Pays;
+use Illuminate\Http\JsonResponse;
 
 class ActeSanteController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $actesSante = ActeSante::all();
-        return view('actes_sante.index', compact('actesSante'));
+        return response()->json($actesSante);
     }
 
-    public function create()
-    {
-        $pays = Pays::all(); // Récupère tous les pays
-        return view('actes_sante.create', compact('pays'));
-    }
-
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
             'nom' => 'required|max:255',
@@ -29,62 +24,45 @@ class ActeSanteController extends Controller
             'pays_id' => 'required|exists:pays,id',
         ]);
 
-        $acteSante = new ActeSante();
-        $acteSante->nom = $validatedData['nom'];
-        $acteSante->description = $validatedData['description'] ?? '';
-        $acteSante->prix = $validatedData['prix'];
-        $acteSante->pays_id = $validatedData['pays_id'];
-        $acteSante->save();
+        $acteSante = ActeSante::create($validatedData);
 
-        return redirect()->route('actes_sante.index')->with('success', 'Acte de Santé ajouté avec succès.');
+        return response()->json(['message' => 'Acte de Santé ajouté avec succès.', 'acteSante' => $acteSante], 201);
     }
 
-    public function show($id)
+    public function showByCountryName($countryName): JsonResponse
     {
-        $acteSante = ActeSante::findOrFail($id);
-        return view('actes_sante.show', compact('acteSante'));
+        $pays = Pays::where('nom', $countryName)->first();
+
+        if (!$pays) {
+            return response()->json(['message' => 'Pays non trouvé'], 404);
+        }
+
+        $actesSante = ActeSante::where('pays_id', $pays->id)->get();
+
+        return response()->json(['pays_id' => $pays->id, 'actesSante' => $actesSante]);
     }
 
-    public function edit($id)
+    public function update(Request $request, $id): JsonResponse
     {
-        $acteSante = ActeSante::findOrFail($id);
-        $pays = Pays::all(); // Assurez-vous d'importer le modèle Pays
-        return view('actes_sante.edit', compact('acteSante', 'pays'));
-    }
-
-
-    public function update(Request $request, $id)
-    {
-        // Validation des données
         $validatedData = $request->validate([
             'nom' => 'required|max:255',
             'description' => 'required',
             'prix' => 'required|numeric',
-            'pays_id' => 'required|exists:pays,id' // Assurez-vous que le pays_id correspond à un enregistrement existant dans la table 'pays'
+            'pays_id' => 'required|exists:pays,id',
         ]);
 
-        // Recherche de l'acte de santé
         $acteSante = ActeSante::findOrFail($id);
+        $acteSante->update($validatedData);
 
-        // Mise à jour de l'acte de santé avec les données validées
-        $acteSante->nom = $validatedData['nom'];
-        $acteSante->description = $validatedData['description'];
-        $acteSante->prix = $validatedData['prix'];
-        $acteSante->pays_id = $validatedData['pays_id'];
-
-        // Enregistrement des modifications
-        $acteSante->save();
-
-        // Redirection vers la liste des actes de santé avec un message de succès
-        return redirect()->route('actes_sante.index')->with('success', 'Acte de Santé mis à jour avec succès.');
+        return response()->json(['message' => 'Acte de Santé mis à jour avec succès.', 'acteSante' => $acteSante]);
     }
 
-
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $acteSante = ActeSante::findOrFail($id);
         $acteSante->delete();
 
-        return redirect()->route('actes_sante.index')->with('success', 'Acte de Santé supprimé avec succès.');
+        return response()->json(['message' => 'Acte de Santé supprimé avec succès.']);
     }
 }
+?>

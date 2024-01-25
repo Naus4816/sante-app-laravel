@@ -3,49 +3,50 @@ namespace App\Http\Controllers;
 
 use App\Models\Pays;
 use Illuminate\Http\Request;
+use App\Models\ActeSante;
+use Illuminate\Http\JsonResponse;
 
 class PaysController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $pays = Pays::all();
-        return view('pays.index', compact('pays'));
+        return response()->json($pays);
     }
 
-    public function create()
-    {
-        return view('pays.create');
-    }
-
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
             'nom' => 'required|unique:pays|max:255',
             'indice_co2' => 'required|numeric',
         ]);
 
-        $pay = new Pays();
-        $pay->nom = $validatedData['nom'];
-        $pay->indice_co2 = $validatedData['indice_co2'];
-        $pay->save();
+        $pay = Pays::create($validatedData);
 
-        return redirect()->route('pays.index')->with('success', 'Pays ajouté avec succès.');
+        return response()->json(['message' => 'Pays ajouté avec succès.', 'pays' => $pay], 201);
     }
 
-    public function show($id)
+    public function showAllCountriesByName(): JsonResponse
     {
-        $pays = Pays::findOrFail($id);
-        return view('pays.show', compact('pays'));
+        $pays = Pays::all();
+        $countryNames = $pays->pluck('nom');
+        
+        return response()->json($countryNames);
     }
 
-    public function edit($id)
+    public function showCountryByEnglishName($name): JsonResponse
     {
-        $pay = Pays::findOrFail($id);
-        return view('pays.edit', compact('pay')); // Assurez-vous que c'est 'pay' et non 'pays'
+        $pays = Pays::where('nom', $name)->first(); 
+
+        if (!$pays) {
+
+            return response()->json(['error' => 'Pays non trouvé'], 404);
+        }
+
+        return response()->json(['nom_anglais' => $pays->nom_anglais,'id' => $pays->id]);
     }
 
-
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
         $validatedData = $request->validate([
             'nom' => 'required|unique:pays,nom,' . $id . '|max:255',
@@ -53,17 +54,16 @@ class PaysController extends Controller
         ]);
 
         $pay = Pays::findOrFail($id);
-        $pay->nom = $validatedData['nom'];
-        $pay->indice_co2 = $validatedData['indice_co2'];
-        $pay->save();
+        $pay->update($validatedData);
 
-        return redirect()->route('pays.index')->with('success', 'Pays mis à jour avec succès.');
+        return response()->json(['message' => 'Pays mis à jour avec succès.', 'pays' => $pay]);
     }
 
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $pays = Pays::findOrFail($id);
         $pays->delete();
-        return redirect()->route('pays.index')->with('success', 'Pays supprimé avec succès.');
+
+        return response()->json(['message' => 'Pays supprimé avec succès.']);
     }
 }

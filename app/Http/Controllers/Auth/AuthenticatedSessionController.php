@@ -7,54 +7,46 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 
-class AuthenticatedSessionController extends Controller
-{
-    /**
-     * Display the login view.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function create()
+    class AuthenticatedSessionController extends Controller
     {
-        return view('auth.login');
-    }
-
-    /**
-     * Handle an incoming authentication request.
-     *
-     * @param  \App\Http\Requests\Auth\LoginRequest  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function store(LoginRequest $request)
-    {
-        $request->authenticate();
-
-        $request->session()->regenerate();
-
-        // Vérifiez si l'utilisateur est un administrateur et redirigez-le vers le tableau de bord admin
-        if (Auth::user()->isAdmin()) {
-            return redirect()->route('admin.index');
+        /**
+         * Display the login view.
+         *
+         * @return \Illuminate\View\View
+         */
+        public function create()
+        {
+            return view('auth.login');
         }
 
-        // Pour les autres utilisateurs, redirigez vers la page par défaut
-        return redirect()->intended(RouteServiceProvider::HOME);
+        /**
+         * Handle an incoming authentication request.
+         *
+         * @param  \App\Http\Requests\Auth\LoginRequest  $request
+         * @return \Illuminate\Http\RedirectResponse
+         */
+        public function store(LoginRequest $request): JsonResponse
+        {
+            $request->authenticate();
+            $request->session()->regenerate();
+        
+            $user = Auth::user();
+            return response()->json([
+                'success' => true,
+                'isAdmin' => $user->isAdmin(),
+                'redirect' => $user->isAdmin() ? route('admin.index') : RouteServiceProvider::HOME,
+            ]);
+        }
+        
+        public function destroy(Request $request): JsonResponse
+        {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        
+            return response()->json(['success' => true]);
+        }
+        
     }
-
-    /**
-     * Destroy an authenticated session.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function destroy(Request $request)
-    {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-
-        return redirect('/');
-    }
-}

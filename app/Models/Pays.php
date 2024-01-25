@@ -16,7 +16,7 @@ class Pays extends Model
      */
     protected $fillable = [
         'nom',
-        'indice_co2',
+        'nom_anglais',
         // Ajoutez d'autres champs si nécessaire
     ];
 
