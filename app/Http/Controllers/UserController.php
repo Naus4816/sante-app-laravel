@@ -27,7 +27,13 @@ class UserController extends Controller
         $validatedData['password'] = Hash::make($validatedData['password']);
         
         $user = User::create($validatedData);
-        return response()->json(['message' => 'Utilisateur créé avec succès.', 'user' => $user], 201);
+        return response()->json(['message' => 'Utilisateur créé avec succès.'], 201);
+    }
+
+    public function showAll():JsonResponse
+    {
+        $user = User::all();
+        return response()->json($user);
     }
 
     public function show($id): JsonResponse

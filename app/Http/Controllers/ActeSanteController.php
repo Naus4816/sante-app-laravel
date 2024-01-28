@@ -29,6 +29,13 @@ class ActeSanteController extends Controller
         return response()->json(['message' => 'Acte de Santé ajouté avec succès.', 'acteSante' => $acteSante], 201);
     }
 
+
+    public function show():JsonResponse
+    {
+        $actesSantes = ActeSante::all();
+        return response()->json($actesSantes);
+    }
+    
     public function showByCountryName($countryName): JsonResponse
     {
         $pays = Pays::where('nom', $countryName)->first();

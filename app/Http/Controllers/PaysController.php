@@ -21,9 +21,15 @@ class PaysController extends Controller
             'indice_co2' => 'required|numeric',
         ]);
 
-        $pay = Pays::create($validatedData);
+        $pays = Pays::create($validatedData);
 
-        return response()->json(['message' => 'Pays ajouté avec succès.', 'pays' => $pay], 201);
+        return response()->json(['message' => 'Pays ajouté avec succès.', 'pays' => $pays], 201);
+    }
+
+    public function show():JsonResponse
+    {
+        $pays = Pays::all();
+        return response()->json($pays);
     }
 
     public function showAllCountriesByName(): JsonResponse

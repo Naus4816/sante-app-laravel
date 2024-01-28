@@ -28,6 +28,12 @@ class RecommandationController extends Controller
         return response()->json(['message' => 'Recommandation créée avec succès.', 'recommandation' => $recommandation], 201);
     }
 
+    public function show():JsonResponse
+    {
+        $recommandation = Recommandation::all();
+        return response()->json($recommandation);
+    }
+
     public function showByCountryId($id): JsonResponse
     {
         $pays = Pays::where('id', $id)->first();
