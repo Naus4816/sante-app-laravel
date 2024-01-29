@@ -13,7 +13,7 @@ class DeplacementController extends Controller
         return response()->json($deplacements);
     }
 
-    public function show($id): JsonResponse
+    public function showDeplacementById($id): JsonResponse
     {
         $deplacement = Deplacement::findOrFail($id);
         return response()->json($deplacement);
@@ -59,19 +59,5 @@ class DeplacementController extends Controller
 
         $deplacement = Deplacement::create($validatedData);
         return response()->json(['message' => 'Déplacement créé avec succès.', 'deplacement' => $deplacement], 201);
-    }
-
-    public function store2(Request $request): JsonResponse
-    {
-        $validatedData = $request->validate([
-            'nom' => 'required|max:255',
-            'description' => 'nullable',
-            'prix' => 'required|numeric',
-            'pays_id' => 'required|exists:pays,id',
-        ]);
-
-        $acteSante = ActeSante::create($validatedData);
-
-        return response()->json(['message' => 'Acte de Santé ajouté avec succès.', 'acteSante' => $acteSante], 201);
     }
 }

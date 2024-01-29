@@ -18,7 +18,7 @@ class PaysController extends Controller
     {
         $validatedData = $request->validate([
             'nom' => 'required|unique:pays|max:255',
-            'indice_co2' => 'required|numeric',
+            'nom_anglais' => 'required|unique:pays|max:255',
         ]);
 
         $pays = Pays::create($validatedData);
@@ -29,6 +29,12 @@ class PaysController extends Controller
     public function show():JsonResponse
     {
         $pays = Pays::all();
+        return response()->json($pays);
+    }
+
+    public function showPaysById($id): JsonResponse
+    {
+        $pays = Pays::findOrFail($id);
         return response()->json($pays);
     }
 
@@ -56,7 +62,7 @@ class PaysController extends Controller
     {
         $validatedData = $request->validate([
             'nom' => 'required|unique:pays,nom,' . $id . '|max:255',
-            'indice_co2' => 'required|numeric',
+            'nom_anglais' => 'required|unique:pays,nom_anglais,' . $id . '|max:255',
         ]);
 
         $pay = Pays::findOrFail($id);

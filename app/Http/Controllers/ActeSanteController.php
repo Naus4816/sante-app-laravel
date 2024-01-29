@@ -29,6 +29,11 @@ class ActeSanteController extends Controller
         return response()->json(['message' => 'Acte de Santé ajouté avec succès.', 'acteSante' => $acteSante], 201);
     }
 
+    public function showActeSanteById($id): JsonResponse
+    {
+        $acteSante = ActeSante::findOrFail($id);
+        return response()->json($acteSante);
+    }
 
     public function show():JsonResponse
     {

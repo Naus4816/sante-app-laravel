@@ -34,6 +34,12 @@ class RecommandationController extends Controller
         return response()->json($recommandation);
     }
 
+    public function showRecommandationById($id): JsonResponse
+    {
+        $recommandation = Recommandation::findOrFail($id);
+        return response()->json($recommandation);
+    }
+
     public function showByCountryId($id): JsonResponse
     {
         $pays = Pays::where('id', $id)->first();
@@ -50,8 +56,8 @@ class RecommandationController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         $validatedData = $request->validate([
-            'titre' => 'required|max:255',
-            'contenu' => 'required',
+            'contenu' => 'required|max:255',
+            'pays_id' => 'required',
             // Autres champs si nécessaire
         ]);
 
