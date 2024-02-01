@@ -48,13 +48,6 @@ class ActeSante extends Model
         return number_format($this->prix, 2) . ' €';
     }
 
-    /**
-     * Un mutateur pour préparer une donnée avant de la sauvegarder (exemple)
-     */
-    public function setNomAttribute($value)
-    {
-        $this->attributes['nom'] = strtolower($value);
-    }
 
     // Autres méthodes du modèle
     // public function uneMethode()
