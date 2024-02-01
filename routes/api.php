@@ -10,15 +10,21 @@ use App\Http\Controllers\RecommandationController;
 use App\Http\Controllers\ActeSanteController;
 use App\Http\Controllers\DeplacementController;
 use App\Http\Controllers\UserController;
-
+use App\Http\Controllers\PasswordController;
 
 
 // Login
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login/code', [AuthController::class, 'verifyCode']);
+Route::post('login/resend-code',[AuthController::class, 'resendVerificationCode']);
+//Reset Mot de passe
+Route::post('/password/new-password',[PasswordController::class, 'newPassword']);
+Route::post('/password/send-code',[PasswordController::class, 'sendResetCode']);
+Route::post('/password/verify-code',[PasswordController::class, 'verifyResetCode']);
 //Register
 Route::post('/register', [RegisterController::class, 'register']);
 //Email
-Route::post('/email/resend', [EmailVerificationNotificationController::class, 'resend'])->middleware('auth');
+Route::post('/verify-code', 'AuthController@verifyCode');
 //Actes de santé
 Route::get('/actesante/{countryName}',[ActeSanteController::class, 'showByCountryName']);
 Route::get('/actesante',[ActeSanteController::class, 'show']);
