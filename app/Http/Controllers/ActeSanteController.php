@@ -18,7 +18,7 @@ class ActeSanteController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
-            'nom' => 'required|max:255',
+            'nom' => 'nullable',
             'description' => 'nullable',
             'prix' => 'required|numeric',
             'pays_id' => 'required|exists:pays,id',
@@ -57,7 +57,7 @@ class ActeSanteController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         $validatedData = $request->validate([
-            'nom' => 'required|max:255',
+            'nom' => 'required',
             'description' => 'required',
             'prix' => 'required|numeric',
             'pays_id' => 'required|exists:pays,id',
